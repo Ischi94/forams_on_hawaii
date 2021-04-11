@@ -99,3 +99,17 @@ trank_plot <- mcmc_rank_overlay(m1) +
   theme_minimal()
 
 
+
+# model comparison --------------------------------------------------------
+
+# add LOO as criterion
+m0 <- add_criterion(m0, "loo")
+
+m1 <- add_criterion(m1, "loo")
+
+# compare models
+comp <- loo_compare(m0, m1, criterion = "loo")
+
+print(comp, digits = 2, simplify = FALSE)
+
+
