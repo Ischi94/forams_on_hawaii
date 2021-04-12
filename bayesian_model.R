@@ -32,7 +32,8 @@ m0 <- brm(
   prior = c(prior(normal(0, 0.2), class = Intercept), 
             prior(cauchy(0, 1), class = sigma)), 
             iter = 2000, warmup = 500, chains = 4, 
-            cores = 8, seed = 5, file = here("model/null_model"))
+            cores = 8, seed = 5, file = here("model/null_model"), 
+  sample_prior = TRUE)
 
 # fit distance only model
 m1 <- brm(
@@ -42,7 +43,8 @@ m1 <- brm(
             prior(normal(0, 0.5), class = b),
             prior(cauchy(0, 1), class = sigma)), 
   iter = 2000, warmup = 500, chains = 4, 
-  cores = 8, seed = 5, file = here("model/distance_model"))
+  cores = 8, seed = 5, file = here("model/distance_model"), 
+  sample_prior = TRUE)
 
 # fit distance and depth model
 m2 <- brm(
@@ -52,7 +54,8 @@ m2 <- brm(
             prior(normal(0, 0.5), class = b),
             prior(cauchy(0, 1), class = sigma)), 
   iter = 2000, warmup = 500, chains = 4, 
-  cores = 8, seed = 5, file = here("model/distance_depth_model"))
+  cores = 8, seed = 5, file = here("model/distance_depth_model"), 
+  sample_prior = TRUE)
 
 # model comparison --------------------------------------------------------
 
@@ -71,13 +74,14 @@ print(comp, digits = 2, simplify = FALSE)
 
 # model check -------------------------------------------------------------
 
+
 # effective number of samples
 
 neff_plot <- neff_ratio(m1) %>% 
   enframe(name = "estimate", value = "neff_ratio") %>% 
   mutate(estimate = c("Intercept", 
-                      "Distance Kan'eohe", 
-                      "Distance Kahalu'u", 
+                      "Distance Kāneʻohe", 
+                      "Distance Kahaluʻu", 
                       "Distance MCBH", 
                       "Sigma", 
                       "LP"), 
@@ -102,8 +106,8 @@ neff_plot <- neff_ratio(m1) %>%
 rhat_plot <- rhat(m1) %>% 
   enframe(name = "estimate", value = "rhat") %>% 
   mutate(estimate = c("Intercept", 
-                      "Distance Kan'eohe", 
-                      "Distance Kahalu'u", 
+                      "Distance Kāneʻohe", 
+                      "Distance Kahaluʻu", 
                       "Distance MCBH", 
                       "Sigma", 
                       "LP")) %>% 
@@ -129,8 +133,8 @@ trank_plot <- mcmc_rank_overlay(m1) +
 
 ridge_plot <- posterior_samples(m1) %>% 
   as_tibble() %>% 
-  select("Distance Kan'eohe" = b_dist_kan, 
-         "Distance Kahalu'u" = b_dist_kah, 
+  select("Distance Kāneʻohe" = b_dist_kan, 
+         "Distance Kahaluʻu" = b_dist_kah, 
          "Distance MCBH" = b_dist_mcbh) %>% 
   pivot_longer(cols = everything(), 
                names_to = "estimate") %>% 
@@ -142,10 +146,10 @@ ridge_plot <- posterior_samples(m1) %>%
   scale_fill_manual(values = c("steelblue", "firebrick", "darkgreen")) +
   theme_minimal()
 
-posterior_samples(m1) %>% 
+coeff_plot <- posterior_samples(m1) %>% 
   as_tibble() %>% 
-  select("Distance Kan'eohe" = b_dist_kan, 
-         "Distance Kahalu'u" = b_dist_kah, 
+  select("Distance Kāneʻohe" = b_dist_kan, 
+         "Distance Kahaluʻu" = b_dist_kah, 
          "Distance MCBH" = b_dist_mcbh) %>% 
   pivot_longer(cols = everything(), 
                names_to = "estimate") %>% 
@@ -172,4 +176,23 @@ posterior_samples(m1) %>%
              fill = "steelblue", colour = "grey30", 
              stroke = 1) +
   labs(y = NULL, x = "Coefficient estimate") +
+  theme_minimal()
+
+regression_plot <- tibble(dist_kan = seq(-2, 2.5, length.out = 10), dist_kah = 0, dist_mcbh = 0) %>% 
+  predict(m1, newdata = .) %>% 
+  as_tibble() %>% 
+  add_column(dist_kan = seq(-2, 2.5, length.out = 10)) %>% 
+  mutate(dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan)) %>%
+  ggplot(aes(dist_kan, Estimate)) +
+  geom_ribbon(aes(ymin = Q2.5, ymax = Q97.5), 
+              alpha = 0.3, fill = "grey10") +
+  geom_line(colour = "grey30", 
+            size = 2) +
+  geom_point(shape = 21, size = 4, 
+             fill = "steelblue", colour = "grey30", 
+             stroke = 1,
+             data = dat_fi_std %>% 
+               mutate(Estimate = fi, 
+                      dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan))) +
+  labs(y = "Foram Index (std)", x = "Distance Kāneʻohe (km)") +
   theme_minimal()
