@@ -21,6 +21,35 @@ z_score <- function(x){
 dat_fi_std <- dat_fi %>% 
   mutate(across(depth:dist_mcbh, z_score))
 
+# quick plot of foram index per sample
+fi_plot <- dat_fi %>% 
+  mutate(sample = as_factor(sample), 
+         sample = fct_reorder(sample, desc(fi))) %>% 
+  ggplot(aes(sample, fi)) +
+  geom_hline(yintercept = c(2, 4), 
+             linetype = "dashed", 
+             colour = "firebrick", 
+             alpha = 0.8) +
+  geom_segment(aes(x = sample, xend = sample,
+                   y = 0, yend = fi), 
+               colour = "steelblue", size = 1) +
+  geom_point(shape = 21, size = 7, 
+             fill = "steelblue", colour = "grey30", 
+             stroke = 1) +
+  labs(y = "Foram Index", x = "Samples") +
+  annotate(geom = "text", x = 0.65, y = 1, label = "no reefs", 
+           angle = 90) +
+  annotate(geom = "text", x = 0.65, y = 3, label = "marginal", 
+           angle = 90) +
+  annotate(geom = "text", x = 0.65, y = 7, label = "supports reefs", 
+           angle = 90) +
+  annotate(geom = "text", x = 12.5, y = 10, 
+           label = paste("median =", median(dat_fi$fi))) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+              axis.ticks = element_line())
+  
+
 
 # model fitting -----------------------------------------------------------
 
@@ -79,6 +108,7 @@ print(comp, digits = 2, simplify = FALSE)
 
 neff_plot <- neff_ratio(m1) %>% 
   enframe(name = "estimate", value = "neff_ratio") %>% 
+  filter(!str_detect(estimate, 'prior')) %>% 
   mutate(estimate = c("Intercept", 
                       "Distance Kāneʻohe", 
                       "Distance Kahaluʻu", 
@@ -95,16 +125,19 @@ neff_plot <- neff_ratio(m1) %>%
   geom_segment(aes(x = 0, xend = neff_ratio, 
                    y = estimate, yend = estimate), 
                colour = "steelblue", size = 0.8) +
-  geom_point(shape = 21, size = 3, 
+  geom_point(shape = 21, size = 6, 
              fill = "steelblue", colour = "grey30", 
              stroke = 1) +
   labs(y = NULL, x = "Effective sample size ratio") +
   coord_cartesian(xlim = c(0, 0.75)) +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
 
 # rhat values
 rhat_plot <- rhat(m1) %>% 
   enframe(name = "estimate", value = "rhat") %>% 
+  filter(!str_detect(estimate, 'prior')) %>% 
   mutate(estimate = c("Intercept", 
                       "Distance Kāneʻohe", 
                       "Distance Kahaluʻu", 
@@ -119,11 +152,16 @@ rhat_plot <- rhat(m1) %>%
              colour = "firebrick", alpha = 0.4, 
              linetype = "dashed") +
   labs(y = NULL, x = "Rhat value") +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
 
 # trace plot for convergence
 trank_plot <- mcmc_rank_overlay(m1) +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
+  
 
 
 
@@ -139,12 +177,19 @@ ridge_plot <- posterior_samples(m1) %>%
   pivot_longer(cols = everything(), 
                names_to = "estimate") %>% 
   ggplot(aes(value, estimate, fill = estimate)) +
+  geom_vline(xintercept = 0, 
+             linetype = "dashed", 
+             colour = "grey10") +
   stat_density_ridges(quantile_lines = TRUE, 
                       quantiles = 2, 
                       scale = 2.5, rel_min_height = 0.001, 
-                      colour = "white", alpha = 0.7) +
+                      colour = "white", alpha = 0.7, 
+                      show.legend = FALSE) +
   scale_fill_manual(values = c("steelblue", "firebrick", "darkgreen")) +
-  theme_minimal()
+  labs(y = NULL, x = "Coefficient estimate") +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
 
 coeff_plot <- posterior_samples(m1) %>% 
   as_tibble() %>% 
@@ -176,18 +221,33 @@ coeff_plot <- posterior_samples(m1) %>%
              fill = "steelblue", colour = "grey30", 
              stroke = 1) +
   labs(y = NULL, x = "Coefficient estimate") +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
 
-regression_plot <- tibble(dist_kan = seq(-2, 2.5, length.out = 10), dist_kah = 0, dist_mcbh = 0) %>% 
-  predict(m1, newdata = .) %>% 
+
+
+regression_plot <- tibble(dist_kan = c(-2, 2.5), dist_kah = 0, dist_mcbh = 0) %>% 
+  predict(m1, newdata = ., summary = FALSE, nsamples = 2000) %>% 
   as_tibble() %>% 
-  add_column(dist_kan = seq(-2, 2.5, length.out = 10)) %>% 
+  set_names(c(-2, 2.5)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = "dist_kan", values_to = "fi") %>% 
+  mutate(dist_kan = as.double(dist_kan)) %>% 
+  add_column(iter = rep(1:2000, each = 2)) %>% 
   mutate(dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan)) %>%
-  ggplot(aes(dist_kan, Estimate)) +
-  geom_ribbon(aes(ymin = Q2.5, ymax = Q97.5), 
-              alpha = 0.3, fill = "grey10") +
-  geom_line(colour = "grey30", 
-            size = 2) +
+  ggplot(aes(dist_kan, fi)) +
+  geom_line(aes(group = iter),
+            colour = "firebrick", 
+            size = 1, alpha = 0.01) +
+  geom_line(colour = "firebrick",
+            size = 1.5,
+            data = tibble(dist_kan = c(-2, 2.5), dist_kah = 0, dist_mcbh = 0) %>%
+              predict(m1, newdata = .) %>%
+              as_tibble() %>%
+              rename(fi = Estimate) %>%
+              add_column(dist_kan = c(-2, 2.5)) %>%
+              mutate(dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan))) +
   geom_point(shape = 21, size = 4, 
              fill = "steelblue", colour = "grey30", 
              stroke = 1,
@@ -195,4 +255,8 @@ regression_plot <- tibble(dist_kan = seq(-2, 2.5, length.out = 10), dist_kah = 0
                mutate(Estimate = fi, 
                       dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan))) +
   labs(y = "Foram Index (std)", x = "Distance Kāneʻohe (km)") +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
+
+
