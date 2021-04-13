@@ -17,7 +17,7 @@ z_score <- function(x){
   return(z)
 }
 
-# standardize data for improve model fit and prior selection
+# standardize data for improved model fit and prior selection
 dat_fi_std <- dat_fi %>% 
   mutate(across(depth:dist_mcbh, z_score))
 
@@ -61,8 +61,8 @@ m0 <- brm(
   prior = c(prior(normal(0, 0.2), class = Intercept), 
             prior(cauchy(0, 1), class = sigma)), 
             iter = 2000, warmup = 500, chains = 4, 
-            cores = 8, seed = 5, file = here("model/null_model"), 
-  sample_prior = TRUE)
+            cores = 8, seed = 5, 
+  file = here("model/null_model"))
 
 # fit distance only model
 m1 <- brm(
@@ -72,8 +72,8 @@ m1 <- brm(
             prior(normal(0, 0.5), class = b),
             prior(cauchy(0, 1), class = sigma)), 
   iter = 2000, warmup = 500, chains = 4, 
-  cores = 8, seed = 5, file = here("model/distance_model"), 
-  sample_prior = TRUE)
+  cores = 8, seed = 5, 
+  file = here("model/distance_model"))
 
 # fit distance and depth model
 m2 <- brm(
@@ -83,8 +83,9 @@ m2 <- brm(
             prior(normal(0, 0.5), class = b),
             prior(cauchy(0, 1), class = sigma)), 
   iter = 2000, warmup = 500, chains = 4, 
-  cores = 8, seed = 5, file = here("model/distance_depth_model"), 
-  sample_prior = TRUE)
+  cores = 8, seed = 5, 
+  file = here("model/distance_depth_model"))
+
 
 # model comparison --------------------------------------------------------
 
@@ -157,14 +158,18 @@ rhat_plot <- rhat(m1) %>%
         axis.ticks = element_line())
 
 # trace plot for convergence
-trank_plot <- mcmc_rank_overlay(m1) +
+trace_plot <- mcmc_trace(m1) +
   theme_minimal() +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
   
 
 
-
+# trace plot for convergence
+trank_plot <- mcmc_rank_overlay(m1) +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), 
+        axis.ticks = element_line())
 
 
 # analyze results ---------------------------------------------------------
