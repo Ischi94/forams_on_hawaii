@@ -279,6 +279,6 @@ gg_names <- paste0(gg_charts, ".png")
 # save all images at once
 walk2(gg_names, all_plots, ~ggsave(filename = .x, plot = .y, 
                                    device = "png", 
-                                   path = paste0(here("figures", "/"))))
+                                   path = here("figures")))
 
 

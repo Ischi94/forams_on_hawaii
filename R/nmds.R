@@ -27,7 +27,7 @@ nmds <- metaMDS(distmat,
 
 # visualization -----------------------------------------------------------
 
-tibble(nmds1 = scores(nmds)[,1], 
+nmds_plot <- tibble(nmds1 = scores(nmds)[,1], 
        nmds2 = scores(nmds)[,2], 
        samples = dat_assemblage$sample) %>% 
   mutate(group = if_else(nmds1 < 0 & nmds2 < 0.2, "Group 1", 
@@ -49,3 +49,7 @@ tibble(nmds1 = scores(nmds)[,1],
   theme_minimal() +
   theme(axis.ticks = element_line(), 
         legend.position = "none")
+
+# save image
+ggsave("nmds_plot", plot = nmds_plot,
+       device = "png", path = here("figures"))
