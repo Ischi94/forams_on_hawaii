@@ -265,3 +265,20 @@ regression_plot <- tibble(dist_kan = c(-2, 2.5), dist_kah = 0, dist_mcbh = 0) %>
         axis.ticks = element_line())
 
 
+
+# save images -------------------------------------------------------------
+
+# select all plots from environment
+gg_charts <- ls()[str_detect(ls(),"plot")] 
+
+all_plots <- mget(gg_charts)
+
+# set image names
+gg_names <- paste0(gg_charts, ".png")
+
+# save all images at once
+walk2(gg_names, all_plots, ~ggsave(filename = .x, plot = .y, 
+                                   device = "png", 
+                                   path = paste0(here("figures", "/"))))
+
+
