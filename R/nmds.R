@@ -37,6 +37,12 @@ tibble(nmds1 = scores(nmds)[,1],
                              color = "white") +
   geom_label(aes(label = samples), 
              nudge_y = c(rep(0, 12), 0.03)) +
+  annotate("rect", xmin = -0.51, xmax = -0.35, ymin = 0.49, ymax = 0.52, 
+           fill = "white", 
+           colour = "grey40") +
+  annotate("text", x = -0.43, y = 0.505, 
+           label = paste("stress = ", round(nmds$stress, 3)), 
+           size = 4.5) +
   coord_cartesian(ylim = c(-0.3, 0.5)) +
   scale_fill_manual(values = c("darkgreen", "firebrick", "steelblue")) +
   labs(x = "NMDS 1", y = "NMDS 2") +
