@@ -2,14 +2,13 @@ library(here)
 library(tidyverse)
 library(flextable)
 library(officer)
-library(brms)
+
 
 
 # load data ---------------------------------------------------------------
 
 # assemblage data
-dat_assemblage <- read_csv(here("data/assemblage.csv")) %>% 
-  janitor::clean_names()
+dat_assemblage <- read_csv(here("data/assemblage.csv"))
 
 # foram index and distance to settlements
 dat_fi <- read_csv(here("data/raw_fi.csv"))
@@ -17,14 +16,110 @@ dat_fi <- read_csv(here("data/raw_fi.csv"))
 # final model
 m1 <- read_rds(here("model/distance_model.rds"))
 
-
+# model comparison
+dat_comp <- read_csv(file = here("data/model_comparison.csv"))
 
 
 # tables ------------------------------------------------------------------
 
+# model summary
 m1_smr <- m1 %>% 
   summary(prior = TRUE)
 
-m1_smr$fixed %>% 
-  as_tibble(rownames = "Coefficient")
+# convert to tidy flextable
+m1_smr_fxt <- m1_smr$fixed %>% 
+  as_tibble(rownames = "Coefficient") %>% 
+  mutate(across(Estimate:Rhat, round, 3), 
+         across(Bulk_ESS:Tail_ESS, as.integer), 
+         Coefficient = c("Intercept",
+                         "Distance Kāneʻohe",
+                         "Distance Kahaluʻu", 
+                         "Distance MCBH")) %>% 
+  flextable() %>% 
+  bold(part = "header") %>% 
+  autofit()
+
+# open docx-file and add flextable
+my_doc <- read_docx() %>% 
+  body_add_flextable(m1_smr_fxt)  
+
+
+# model comparison
+comp_fxt <- dat_comp %>% 
+  flextable() %>% 
+  bold(part = "header") %>% 
+  autofit()
+
+
+# add to word file
+my_doc <- my_doc %>% 
+  body_add_break() %>% 
+  body_add_flextable(comp_fxt, pos = "after")
+
+
+# assemblage data
+assemblage_fxt <- dat_assemblage %>% 
+  select(-c(Latitude,Longitude, Depth, "Absolute Abundance" = "absolute abundance")) %>% 
+  mutate(across(Amphistegina:Textulariida, round, 1), 
+         Sample = as.integer(Sample)) %>% 
+  na_if(0) %>% 
+  flextable() %>% 
+  colformat_double(na_str = "0") %>% 
+  bold(part = "header") %>% 
+  autofit()
+
+# add to word file
+my_doc <- my_doc %>% 
+  body_add_break() %>% 
+  body_add_flextable(assemblage_fxt, pos = "after")
+
+
+# sample information
+sample_fxt <- dat_fi %>% 
+  rename("Sample" = sample) %>% 
+  full_join(dat_assemblage) %>% 
+  select(-c(Amphistegina:Elphidium), -"absolute abundance") %>% 
+  select(Sample,
+         Latitude, Longitude,
+         Depth,
+         -c(depth, fi), 
+         "Distance Kāneʻohe" = dist_kan, 
+         "Distance Kahaluʻu" = dist_kah, 
+         "Distance MCBH" = dist_mcbh) %>% 
+  mutate(Sample = as.integer(Sample)) %>% 
+  flextable() %>% 
+  colformat_double(j = c(2,3), 
+                   digits = 0, big.mark = "") %>% 
+  bold(part = "header") %>% 
+  autofit()
+
+# add to word file
+my_doc <- my_doc %>% 
+  body_add_break() %>% 
+  body_add_flextable(sample_fxt, pos = "after")
+
+
+# foram index
+fi_fxt <- dat_fi %>% 
+  select("Sample" = sample, fi) %>%
+  add_column("Foram Index" = dat_fi$fi, .before = "fi") %>% 
+  flextable() %>% 
+  compose(j = 3,
+          value = as_paragraph(
+            linerange(value = fi, max = max(fi), height = .15)),
+          part = "body") %>% 
+  bold(part = "header") %>% 
+  compose(j = "fi", part = "header", 
+          value = as_paragraph("")) %>% 
+  autofit()
+
+# add to word file
+my_doc <- my_doc %>% 
+  body_add_break() %>% 
+  body_add_flextable(fi_fxt, pos = "after")
+
+
+# convert to word file/ add input to empty docx
+print(my_doc, target = here("tables/extended_tables.docx"))
+
 
