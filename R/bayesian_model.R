@@ -99,7 +99,17 @@ m2 <- add_criterion(m2, criterion = "loo")
 # compare models
 comp <- loo_compare(m0, m1, m2, criterion = "loo")
 
-print(comp, digits = 2, simplify = FALSE)
+as_tibble(comp, digits = 2, simplify = TRUE) 
+
+comp %>%  
+  as_tibble() %>% 
+  select("ELPD difference" = elpd_diff, 
+         "SE ELPD difference" = se_diff, 
+         "Absolute ELPD" = elpd_loo, 
+         "SE absolute ELPD" = se_elpd_loo) %>% 
+  mutate(across(everything(), as.double), 
+         across(everything(), round, 3)) %>% 
+  write_csv(file = here("data/model_comparison.csv")) 
 
 
 # model check -------------------------------------------------------------
