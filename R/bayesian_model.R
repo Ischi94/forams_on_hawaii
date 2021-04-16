@@ -87,6 +87,8 @@ m2 <- brm(
   file = here("model/distance_depth_model"))
 
 
+
+
 # model comparison --------------------------------------------------------
 
 # add LOO as criterion
@@ -110,6 +112,8 @@ comp %>%
   mutate(across(everything(), as.double), 
          across(everything(), round, 3)) %>% 
   write_csv(file = here("data/model_comparison.csv")) 
+
+
 
 
 # model check -------------------------------------------------------------
