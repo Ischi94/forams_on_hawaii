@@ -281,4 +281,16 @@ walk2(gg_names, all_plots, ~ggsave(filename = .x, plot = .y,
                                    device = "png", 
                                    path = here("figures")))
 
+# save images for manuscript as eps
+cairo_ps(here("figures/coeff_plot.eps"), 
+         width = 9.489583, height = 6.427083)
+coeff_plot
+dev.off()
+
+cairo_ps(here("figures/regression_plot.eps"), 
+         width = 9.489583, height = 6.427083)
+regression_plot
+dev.off()
+
+
 
