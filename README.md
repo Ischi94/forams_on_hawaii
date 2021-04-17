@@ -2,7 +2,7 @@
 # forams_on_hawaii
 
 <!-- badges: start -->
-[![Generic badge](https://img.shields.io/badge/Status-In Review-orange.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Status-In_Review-orange.svg)](https://shields.io/)
 <!-- badges: end -->
 
 This is the repository for the manuscript **Benthic foraminifera as bioindicators for assessing reef condition in Kāneʻohe Bay, Oʻahu, Hawai'i**.  
