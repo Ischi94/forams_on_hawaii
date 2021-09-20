@@ -59,14 +59,20 @@ my_doc <- my_doc %>%
 
 # assemblage data
 assemblage_fxt <- dat_assemblage %>% 
-  select(-c(Latitude,Longitude, Depth, "Absolute Abundance" = "absolute abundance")) %>% 
-  mutate(across(Amphistegina:Textulariida, round, 1), 
+  select(-c(Latitude,Longitude, Depth), "Absolute Abundance" = "absolute abundance") %>%
+  rename("Other Small Taxa" = "Other Miliolida") %>% 
+  mutate(across(Amphistegina:Textulariida, round, 1),
          Sample = as.integer(Sample)) %>% 
   na_if(0) %>% 
   flextable() %>% 
   colformat_double(na_str = "0") %>% 
-  bold(part = "header") %>% 
-  autofit()
+  color(i = 1, j = 2:6, color = "darkgreen", part = "header") %>% 
+  color(i = 1, j = 7, color = "steelblue", part = "header") %>% 
+  color(i = 1, j = 8:11, color = "firebrick", part = "header") %>% 
+  theme_booktabs(bold_header = TRUE) %>% 
+  align(align = "center", part = "all") %>% 
+  autofit() 
+
 
 # add to word file
 my_doc <- my_doc %>% 
