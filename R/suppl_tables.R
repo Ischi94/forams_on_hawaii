@@ -61,15 +61,22 @@ my_doc <- my_doc %>%
 assemblage_fxt <- dat_assemblage %>% 
   select(-c(Latitude,Longitude, Depth), "Absolute Abundance" = "absolute abundance") %>%
   rename("Other Small Taxa" = "Other Miliolida") %>% 
-  mutate(across(Amphistegina:Textulariida, round, 1),
+  mutate(across(everything(), round, 1),
+         across(everything(), as.character),
          Sample = as.integer(Sample)) %>% 
-  na_if(0) %>% 
   flextable() %>% 
-  colformat_double(na_str = "0") %>% 
-  color(i = 1, j = 2:6, color = "darkgreen", part = "header") %>% 
-  color(i = 1, j = 7, color = "steelblue", part = "header") %>% 
-  color(i = 1, j = 8:11, color = "firebrick", part = "header") %>% 
+  add_header_row(colwidths = c(1, 5, 1, 4, 1), 
+                 values = c("", "Symbiont-bearing", "", "Opportunistic", "")) %>% 
   theme_booktabs(bold_header = TRUE) %>% 
+  border_remove() %>% 
+  vline(j = c(1, 6, 7, 11), part = "header",
+        border = fp_border(color = "grey40", width = 1.25)) %>% 
+  hline_top(part = "header", 
+            j = 1:12, 
+            border = fp_border(color = "grey40", width = 2.5)) %>% 
+  hline_top(j = 1:12, 
+            border = fp_border(color = "grey40", width = 2.5)) %>%
+  hline_bottom(j = 1:12, border = fp_border(color = "grey40", width = 2.5)) %>% 
   align(align = "center", part = "all") %>% 
   autofit() 
 
