@@ -47,10 +47,10 @@ nmds_plot <- tibble(nmds1 = scores(nmds)[,1],
                   xlim = c(-0.5, 0.7)) +
   scale_fill_manual(values = c("darkgreen", "firebrick", "steelblue")) +
   labs(x = "NMDS 1", y = "NMDS 2") +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 15) +
   theme(axis.ticks = element_line(), 
         legend.position = "none")
 
 # save image
-ggsave("nmds_plot", plot = nmds_plot,
+ggsave("nmds_plot.png", plot = nmds_plot,
        device = "png", path = here("figures"))

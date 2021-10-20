@@ -110,10 +110,10 @@ robustness_coeff_plot <- samples_m1 %>%
                                 "Distance Kahaluʻu", 
                                 "Distance MCBH")) +
   labs(y = NULL, x = "Coefficient estimate") +
-  theme_minimal() +
+  theme_minimal(base_size = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
 # save image
-ggsave("robustness_coeff_plot", plot = robustness_coeff_plot,
+ggsave("robustness_coeff_plot.png", plot = robustness_coeff_plot,
        device = "png", path = here("figures"))

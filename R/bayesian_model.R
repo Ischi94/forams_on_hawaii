@@ -45,7 +45,7 @@ fi_plot <- dat_fi %>%
            angle = 90) +
   annotate(geom = "text", x = 12.5, y = 10, 
            label = paste("median =", median(dat_fi$fi))) +
-  theme_minimal() +
+  theme_minimal(base_size = 15) +
   theme(panel.grid = element_blank(), 
               axis.ticks = element_line())
   
@@ -145,9 +145,10 @@ neff_plot <- neff_ratio(m1) %>%
              stroke = 1) +
   labs(y = NULL, x = "Effective sample size ratio") +
   coord_cartesian(xlim = c(0, 0.75)) +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
-        axis.ticks = element_line())
+        axis.ticks = element_line(), 
+        axis.text.y = element_text(size = 12))
 
 # rhat values
 rhat_plot <- rhat(m1) %>% 
@@ -167,13 +168,13 @@ rhat_plot <- rhat(m1) %>%
              colour = "firebrick", alpha = 0.4, 
              linetype = "dashed") +
   labs(y = NULL, x = "Rhat value") +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
 # trace plot for convergence
 trace_plot <- mcmc_trace(m1) +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
   
@@ -181,7 +182,7 @@ trace_plot <- mcmc_trace(m1) +
 
 # trace plot for convergence
 trank_plot <- mcmc_rank_overlay(m1) +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
@@ -206,7 +207,7 @@ ridge_plot <- posterior_samples(m1) %>%
                       show.legend = FALSE) +
   scale_fill_manual(values = c("steelblue", "firebrick", "darkgreen")) +
   labs(y = NULL, x = "Coefficient estimate") +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
@@ -240,7 +241,7 @@ coeff_plot <- posterior_samples(m1) %>%
              fill = "steelblue", colour = "grey30", 
              stroke = 1) +
   labs(y = NULL, x = "Coefficient estimate") +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
@@ -274,7 +275,7 @@ regression_plot <- tibble(dist_kan = c(-2, 2.5), dist_kah = 0, dist_mcbh = 0) %>
                mutate(Estimate = fi, 
                       dist_kan = dist_kan * sd(dat_fi$dist_kan) + mean(dat_fi$dist_kan))) +
   labs(y = "Foram Index (std)", x = "Distance Kāneʻohe (km)") +
-  theme_minimal() +
+  theme_minimal(base_family = 15) +
   theme(panel.grid = element_blank(), 
         axis.ticks = element_line())
 
