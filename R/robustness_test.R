@@ -106,8 +106,8 @@ robustness_coeff_plot <- samples_m1 %>%
              stroke = 1, 
              data = samples_m3) +
   scale_y_continuous(breaks = c(0.9, 1.9, 2.9), 
-                     labels = c("Distance Kāneʻohe", 
-                                "Distance Kahaluʻu", 
+                     labels = c("Distance Kahaluʻu", 
+                                "Distance Kāneʻohe",
                                 "Distance MCBH")) +
   labs(y = NULL, x = "Coefficient estimate") +
   theme_minimal(base_size = 15) +
